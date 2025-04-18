@@ -1,16 +1,42 @@
 import csv
+import json
 from app.db.database import execute_query
 from app.models.review import ReviewCreate
+from app.core.redis import get_redis_client
+
+# Get Redis client
+redis_client = get_redis_client()
 
 def search_reviews_by_title(query: str):
-    """Search for reviews by title"""
+    """Search for reviews by title with Redis caching"""
+    # Create a cache key based on the query
+    cache_key = f"search:title:{query}"
+    
+    # Try to get results from cache first
+    cached_result = redis_client.get(cache_key)
+    if cached_result:
+        print(f"Cache hit for query: {query}")
+        return json.loads(cached_result)
+    
+    # If not in cache, query the database
+    print(f"Cache miss for query: {query}, querying database")
     sql = """
     SELECT * FROM ClothingReviews 
     WHERE Title ILIKE %s
     LIMIT 100
     """
     params = (f'%{query}%',)
-    return execute_query(sql, params)
+    results = execute_query(sql, params)
+    
+    # Store results in cache for future requests
+    from app.core.config import settings
+    redis_client.setex(
+        cache_key,
+        settings.CACHE_EXPIRE_IN_SECONDS,
+        json.dumps([dict(r) for r in results])
+    )
+    
+    return results
 
 def create_table_if_not_exists():
     """Create the ClothingReviews table if it doesn't exist"""

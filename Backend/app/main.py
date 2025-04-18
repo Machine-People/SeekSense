@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.api import router as api_router
 from app.core.config import settings
 from app.services.review_service import create_table_if_not_exists, check_if_table_has_data, load_data_from_csv
+from app.core.redis import get_redis_client
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -27,6 +28,11 @@ app.include_router(api_router, prefix="/api")
 async def startup_event():
     """Initialize the database and load data if needed"""
     try:
+        # Test Redis connection
+        redis_client = get_redis_client()
+        redis_client.ping()
+        print("Redis connection successful")
+        
         # Create table if it doesn't exist
         create_table_if_not_exists()
         

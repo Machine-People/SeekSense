@@ -1,6 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.api.routes.reviews import router as reviews_router
+from app.core.redis import get_redis_client
 
 router = APIRouter()
 
 router.include_router(reviews_router, prefix="/reviews", tags=["reviews"])
+
+@router.get("/health/redis", tags=["health"])
+async def check_redis_health():
+    """Check if Redis is working properly"""
+    try:
+        redis_client = get_redis_client()
+        if redis_client.ping():
+            return {"status": "ok", "message": "Redis connection is healthy"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Redis connection failed: {str(e)}")

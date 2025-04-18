@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-import logging
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,14 +13,12 @@ class Settings:
     DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", "")
     
     # Replace password placeholder in URL if needed
-    if DATABASE_URL and "[NbfYYs0AilegVOmf]" in DATABASE_URL:
+    if "[NbfYYs0AilegVOmf]" in DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("[NbfYYs0AilegVOmf]", DATABASE_PASSWORD)
-        logging.info("Replaced password placeholder in DATABASE_URL")
     
-    # If DATABASE_URL doesn't contain the password placeholder but we have both URL and password
-    if not DATABASE_URL and DATABASE_PASSWORD:
-        # Construct the URL manually
-        DATABASE_URL = f"postgresql://postgres.ngwjfxcsntjlrrmowllo:{DATABASE_PASSWORD}@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
-        logging.info("Constructed DATABASE_URL from components")
+    # Redis settings
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    CACHE_EXPIRE_IN_SECONDS: int = int(os.getenv("CACHE_EXPIRE_IN_SECONDS", "3600"))  # 1 hour default
 
 settings = Settings()
