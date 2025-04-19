@@ -13,11 +13,5 @@ class ReviewBase(BaseModel):
     DepartmentName: Optional[str] = None
     ClassName: Optional[str] = None
 
-class ReviewCreate(ReviewBase):
-    pass
-
-class ReviewResponse(ReviewBase):
-    pass
-
 class SearchQuery(BaseModel):
     query: str
