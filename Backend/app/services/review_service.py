@@ -1,7 +1,7 @@
 import csv
 import json
 from app.db.database import execute_query
-from app.models.review import ReviewCreate
+from app.models.review import ReviewBase
 from app.core.redis import get_redis_client
 
 # Get Redis client
@@ -62,7 +62,7 @@ def check_if_table_has_data():
     result = execute_query(sql)
     return result[0]['count'] > 0
 
-def insert_review(review: ReviewCreate):
+def insert_review(review: ReviewBase):
     """Insert a single review into the database"""
     sql = """
     INSERT INTO ClothingReviews (
@@ -106,7 +106,7 @@ def load_data_from_csv(file_path: str, max_records=1000):
             try:
                 # CSV format: index, ClothingID, Age, Title, ReviewText, Rating, RecommendedIND, 
                 # PositiveFeedbackCount, DivisionName, DepartmentName, ClassName
-                review = ReviewCreate(
+                review = ReviewBase(
                     ClothingID=int(row[1]) if row[1] else 0,
                     Age=int(row[2]) if row[2] else None,
                     Title=row[3] if row[3] else None,

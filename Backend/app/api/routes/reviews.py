@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models.review import SearchQuery, ReviewResponse
+from app.models.review import SearchQuery, ReviewBase
 from app.services.review_service import search_reviews_by_title
 from typing import List
 

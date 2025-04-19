@@ -1,0 +1,9 @@
+
+Backend/app/__pycache__/
+
+*.pyc
+.env
+.vscode
+Backend/app/venv
+node_modules
+Frontend/.vite
