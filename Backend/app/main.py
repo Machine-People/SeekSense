@@ -42,7 +42,7 @@ async def startup_event():
             csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                                    "Womens Clothing E-Commerce Reviews.csv")
             # Load maximum 1000 records from CSV
-            load_data_from_csv(csv_path, max_records=1000)
+            load_data_from_csv(csv_path, max_records=400)
             print("Data loading completed!")
         else:
             print("Database already contains data, skipping data loading.")

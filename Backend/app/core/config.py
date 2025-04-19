@@ -22,3 +22,6 @@ class Settings:
     CACHE_EXPIRE_IN_SECONDS: int = int(os.getenv("CACHE_EXPIRE_IN_SECONDS", "3600"))  # 1 hour default
 
 settings = Settings()
+
+# To run redis server using docker: docker run --name redis-cache -p 6379:6379 -d redis
+# verify: docker ps
