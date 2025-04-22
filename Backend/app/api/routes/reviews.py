@@ -18,3 +18,4 @@ async def search_reviews(search_query: SearchQuery):
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+

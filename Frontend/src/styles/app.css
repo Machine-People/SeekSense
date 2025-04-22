@@ -71,3 +71,11 @@
     color: #572121;
     margin-top: 20px;
   }
+
+  .tableLink{
+    text-decoration: none ;
+    color: black;
+    cursor: pointer;
+    border: none;
+
+  }

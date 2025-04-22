@@ -131,3 +131,15 @@ def load_data_from_csv(file_path: str, max_records=1000):
                 continue
                 
         print(f"Successfully imported {record_count} records from CSV.")
+
+
+def search_reviews_by_clothingid(clothingid: int):
+    """Search for reviews by clothing ID"""
+    sql = """
+    SELECT * FROM ClothingReviews 
+    WHERE ClothingID = %s
+    """
+    params = (clothingid,)
+    results = execute_query(sql, params)
+    
+    return results

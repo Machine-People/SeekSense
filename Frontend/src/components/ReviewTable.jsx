@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../styles/app.css";
 
 
@@ -27,8 +28,10 @@ function ReviewTable({ reviews }) {
           ) : (
             reviews.map((r, i) => (
               <tr key={i}>
-                <td>{r.clothingid}</td>
-                <td>{r.title}</td>
+                <Link to={`/product/${r.clothingid}`}>
+                <td className="tableLink">{r.clothingid}</td>
+                <td className="tableLink">{r.title}</td>
+                </Link>
                 <td>{r.reviewtext?.slice(0, 50)}...</td>
                 <td>{r.rating}</td>
                 <td>{r.divisionname}</td>
