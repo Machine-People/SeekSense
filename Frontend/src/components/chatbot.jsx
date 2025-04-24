@@ -1,39 +1,39 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { fetchReviews } from "../hooks/Reviewhook";
-import {
-  Box,
-  TextField,
-  IconButton,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  Rating,
-  CircularProgress,
-} from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
 import PersonIcon from "@mui/icons-material/Person";
+import SendIcon from "@mui/icons-material/Send";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  IconButton,
+  Paper,
+  Rating,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { fetchReviews } from "../hooks/Reviewhook";
 
 export default function Chat() {
   const navigate = useNavigate();
   const MAXIMUM_DATA_SHOWN = 5;
-  
+
   const handleSeeMore = (productId) => {
     console.log("Product ID:", productId);
     navigate(`/product/${productId}`);
   };
-  
+
   const [messages, setMessages] = useState([
     {
       text: "Welcome to SeekSense! How can I assist you today?",
       self: false,
     },
   ]);
-  
+
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesRef = useRef(null);
@@ -55,32 +55,32 @@ export default function Chat() {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    
+
     // Add user message
     setMessages((prev) => [...prev, { text: input, self: true }]);
     const userQuery = input;
     setInput("");
     setIsTyping(true);
-    
+
     try {
       // Simulate typing indicator
       setMessages((prev) => [
         ...prev,
         { text: "", self: false, loading: true },
       ]);
-      
+
       // Fetch data
       const data = await fetchReviews(userQuery);
-      
+
       // Remove typing indicator
       setMessages((prev) => prev.filter((msg) => !msg.loading));
-      
+
       var length = data.length;
       // Limit the number of reviews shown
       if (length > MAXIMUM_DATA_SHOWN) {
         length = MAXIMUM_DATA_SHOWN;
       }
-      
+
       // Check if the data is empty
       if (length === 0) {
         setMessages((prev) => [
@@ -92,7 +92,7 @@ export default function Chat() {
         ]);
         return;
       }
-      
+
       // Add response message
       setMessages((prev) => [
         ...prev,
@@ -101,7 +101,7 @@ export default function Chat() {
           self: false,
         },
       ]);
-      
+
       // Add the product reviews to the chat
       for (let i = 0; i < length; i++) {
         setMessages((prev) => [
@@ -138,12 +138,96 @@ export default function Chat() {
         flexDirection: "column",
         bgcolor: "#f5f7fa",
         p: 2,
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <Box
+        sx={{
+          width: "100%",
+          maxWidth: "800px",
+          marginBottom: 3,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          p: 2,
+        }}
+      >
+        <Paper
+          elevation={1}
+          sx={{
+            p: 2,
+            borderRadius: "12px 12px 12px 0",
+            bgcolor: "white",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 1,
+          }}
+        >
+          <SmartToyIcon
+            fontSize="small"
+            sx={{ mt: 0.5, color: "#4CAF50" }}
+          />
+          <Typography variant="body1">
+            Welcome to SeekSense! How can I assist you today?
+          </Typography>
+        </Paper>
+      </Box>
+
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}
+        sx={{
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          gap: 1,
+        }}
+      >
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Type your message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          inputRef={inputRef}
+          disabled={isTyping}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "30px",
+              bgcolor: "white",
+            },
+          }}
+        />
+        <IconButton
+          color="primary"
+          onClick={sendMessage}
+          disabled={!input.trim() || isTyping}
+          sx={{
+            bgcolor: "#4CAF50",
+            color: "white",
+            "&:hover": {
+              bgcolor: "#388E3C",
+            },
+            "&.Mui-disabled": {
+              bgcolor: "#e0e0e0",
+              color: "#9e9e9e",
+            },
+          }}
+        >
+          <SendIcon />
+        </IconButton>
+      </Box>
+
+      <Box
         ref={messagesRef}
         sx={{
-          flexGrow: 1,
+          width: "100%",
+          maxWidth: "800px",
+          marginTop: 3,
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
@@ -151,7 +235,7 @@ export default function Chat() {
           p: 2,
         }}
       >
-        {messages.map((msg, index) => (
+        {messages.slice(1).map((msg, index) => (
           <Box
             key={index}
             sx={{
@@ -206,7 +290,7 @@ export default function Chat() {
                     </Typography>
                     <Rating value={msg.rating} readOnly size="small" />
                   </Box>
-                  
+
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -216,7 +300,7 @@ export default function Chat() {
                       ? `${msg.text.substring(0, 150)}...`
                       : msg.text}
                   </Typography>
-                  
+
                   <Button
                     variant="outlined"
                     size="small"
@@ -261,53 +345,6 @@ export default function Chat() {
             )}
           </Box>
         ))}
-      </Box>
-      
-      <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage();
-        }}
-        sx={{
-          mt: 2,
-          display: "flex",
-          gap: 1,
-        }}
-      >
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          inputRef={inputRef}
-          disabled={isTyping}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "30px",
-              bgcolor: "white",
-            },
-          }}
-        />
-        <IconButton
-          color="primary"
-          onClick={sendMessage}
-          disabled={!input.trim() || isTyping}
-          sx={{
-            bgcolor: "#4CAF50",
-            color: "white",
-            "&:hover": {
-              bgcolor: "#388E3C",
-            },
-            "&.Mui-disabled": {
-              bgcolor: "#e0e0e0",
-              color: "#9e9e9e",
-            },
-          }}
-        >
-          <SendIcon />
-        </IconButton>
       </Box>
     </Box>
   );

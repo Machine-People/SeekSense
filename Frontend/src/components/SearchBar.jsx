@@ -1,6 +1,6 @@
-import React from "react";
-import { TextField, Button, Box, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { Box, Button, InputAdornment, TextField } from "@mui/material";
+import React from "react";
 
 function SearchBar({ search, setSearch, onSearch }) {
   return (

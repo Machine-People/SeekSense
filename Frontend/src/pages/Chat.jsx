@@ -8,7 +8,7 @@ const ChatPage = () => {
   return (
     <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <AppBar position="static" color="transparent" elevation={0} sx={{ bgcolor: "white" }}>
-        <Toolbar>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Button
             component={Link}
             to="/"
@@ -22,7 +22,9 @@ const ChatPage = () => {
             variant="h6" 
             component="div" 
             sx={{ 
-              flexGrow: 1, 
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
               color: "#4CAF50", 
               fontWeight: "bold",
               textTransform: "uppercase"

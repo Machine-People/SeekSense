@@ -1,18 +1,17 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import {
+  Chip,
+  Paper,
+  Rating,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Rating,
-  Box,
-  Typography,
-  Chip,
+  Typography
 } from "@mui/material";
+import React from "react";
+import { Link } from "react-router-dom";
 
 function ReviewTable({ reviews }) {
   return (
@@ -40,25 +39,25 @@ function ReviewTable({ reviews }) {
             </TableRow>
           ) : (
             reviews.map((r, i) => (
-              <TableRow 
+              <TableRow
                 key={i}
-                sx={{ 
-                  "&:hover": { 
-                    backgroundColor: "rgba(76, 175, 80, 0.08)" 
-                  } 
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "rgba(76, 175, 80, 0.08)"
+                  }
                 }}
               >
                 <TableCell>
-                  <Link 
-                    to={`/product/${r.clothingid}`} 
+                  <Link
+                    to={`/product/${r.clothingid}`}
                     style={{ textDecoration: "none", color: "#4CAF50", fontWeight: "medium" }}
                   >
                     {r.clothingid}
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <Link 
-                    to={`/product/${r.clothingid}`} 
+                  <Link
+                    to={`/product/${r.clothingid}`}
                     style={{ textDecoration: "none", color: "#333" }}
                   >
                     <Typography variant="body1" fontWeight="medium">
@@ -75,9 +74,9 @@ function ReviewTable({ reviews }) {
                   <Rating value={r.rating} readOnly precision={0.5} size="small" />
                 </TableCell>
                 <TableCell>
-                  <Chip 
-                    label={r.divisionname} 
-                    size="small" 
+                  <Chip
+                    label={r.divisionname}
+                    size="small"
                     sx={{ backgroundColor: "rgba(76, 175, 80, 0.1)" }}
                   />
                 </TableCell>
