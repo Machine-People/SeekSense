@@ -1,23 +1,50 @@
-import "../styles/app.css";
-
+import React from "react";
+import { TextField, Button, Box, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 function SearchBar({ search, setSearch, onSearch }) {
   return (
-    <div className="search-bar">
-      <input
-        type="text"
+    <Box sx={{ display: "flex", gap: 2, width: "100%", mb: 3 }}>
+      <TextField
+        fullWidth
+        variant="outlined"
         placeholder="Search by title, department, etc."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        onKeyDown={(e => {
-            if (e.key === "Enter") {
-                onSearch();
-            }
-        })
-        }
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onSearch();
+          }
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "8px",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          },
+        }}
       />
-      <button onClick={onSearch}>Search</button>
-    </div>
+      <Button
+        variant="contained"
+        onClick={onSearch}
+        sx={{
+          borderRadius: "8px",
+          backgroundColor: "#4CAF50",
+          "&:hover": {
+            backgroundColor: "#388E3C",
+          },
+          px: 3,
+        }}
+      >
+        Search
+      </Button>
+    </Box>
   );
 }
 

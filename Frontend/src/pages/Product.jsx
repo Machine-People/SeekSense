@@ -1,24 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchbyID } from "../hooks/Reviewhook";
-import "../styles/product.css";
+import {
+    Container,
+    Box,
+    Typography,
+    Paper,
+    Chip,
+    Rating,
+    Divider,
+    CircularProgress,
+    Button,
+    AppBar,
+    Toolbar,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 const ProductPage = () => {
-    const { id } = useParams(); // Get the ID from the URL
-    const [review, setReview] = useState([]); // State to store fetched data
-    const [loading, setLoading] = useState(true); // State to handle loading
+    const { id } = useParams();
+    const [review, setReview] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Fetch data based on the ID
-        var i=1;
+        var i = 1;
         const fetchData = async () => {
-            if (i<1) {
+            if (i < 1) {
                 console.log("return");
                 return;
             }
             i--;
             try {
-                const data = await fetchbyID(id);                
+                const data = await fetchbyID(id);
                 if (data.length === 0) {
                     console.error("No data found for the given ID");
                     return;
@@ -36,70 +52,151 @@ const ProductPage = () => {
     }, [id]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                minHeight="100vh"
+                bgcolor="#f5f7fa"
+            >
+                <CircularProgress color="primary" />
+            </Box>
+        );
     }
 
     if (!review) {
-        return <div>Review not found</div>;
+        return (
+            <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                minHeight="100vh"
+                bgcolor="#f5f7fa"
+            >
+                <Typography variant="h5" color="error">
+                    Review not found
+                </Typography>
+            </Box>
+        );
     }
 
     return (
-        <>
-        <div className="seeksense">
-            <Link to="/" className="logo">
+        <Box sx={{ bgcolor: "#f5f7fa", minHeight: "100vh", pb: 6 }}>
+            <AppBar position="static" color="transparent" elevation={0} sx={{ bgcolor: "white" }}>
+                <Toolbar>
+                    <Button
+                        component={Link}
+                        to="/"
+                        startIcon={<ArrowBackIcon />}
+                        color="primary"
+                        sx={{ mr: 2 }}
+                    >
+                        Back
+                    </Button>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: "#4CAF50", fontWeight: "bold" }}>
+                        SeekSense
+                    </Typography>
+                </Toolbar>
+            </AppBar>
 
-            <h1>SeekSense</h1>
-            </Link>
-        </div>
-        <div className="heading">
-            <h1>Product Review</h1>
-        </div>
+            <Container maxWidth="md" sx={{ mt: 4 }}>
+                <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" color="#333">
+                    Product Review
+                </Typography>
 
-        <div className="product-page-wrapper">
-            {review.map((item, index) => (
-                <div className="product-card" key={index}>
-                    <div className="product-header">
-                        <h2>{item.title || "Untitled Review"}</h2>
-                        {item.rating && (
-                            <div className="product-rating">
-                                {"⭐".repeat(item.rating)}{" "}
-                                <span className="rating-num">({item.rating})</span>
-                            </div>
-                        )}
-                    </div>
+                {review.map((item, index) => (
+                    <Paper
+                        key={index}
+                        elevation={3}
+                        sx={{
+                            p: 4,
+                            mb: 3,
+                            borderRadius: "16px",
+                            transition: "transform 0.2s",
+                            "&:hover": {
+                                transform: "translateY(-4px)",
+                                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                            },
+                        }}
+                    >
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                            <Typography variant="h5" fontWeight="bold">
+                                {item.title || "Untitled Review"}
+                            </Typography>
+                            {item.rating && (
+                                <Box display="flex" alignItems="center">
+                                    <Rating value={item.rating} readOnly precision={0.5} />
+                                    <Typography variant="body2" color="text.secondary" ml={1}>
+                                        ({item.rating})
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
 
-                    {item.reviewtext && (
-                        <p className="review-text">"{item.reviewtext}"</p>
-                    )}
+                        <Divider sx={{ mb: 3 }} />
 
-                    <div className="product-details">
-                        <span className="info-chip">Clothing ID: {item.clothingid}</span>
-                        {item.age && <span className="info-chip">Age: {item.age}</span>}
-                        {item.recommendedind !== null && (
-                            <span
-                                className={`recommend ${
-                                    item.recommendedind ? "yes" : "no"
-                                }`}
+                        {item.reviewtext && (
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    mb: 3,
+                                    p: 2,
+                                    borderLeft: "4px solid #4CAF50",
+                                    bgcolor: "rgba(76, 175, 80, 0.05)",
+                                    borderRadius: "0 8px 8px 0",
+                                    fontStyle: "italic",
+                                }}
                             >
-                                {item.recommendedind ? "✅ Recommended" : "❌ Not Recommended"}
-                            </span>
+                                "{item.reviewtext}"
+                            </Typography>
                         )}
-                        {item.PositiveFeedbackCount !== null && (
-                            <span className="feedback">
-                                👍 {item.PositiveFeedbackCount} helpful
-                            </span>
-                        )}
-                    </div>
 
-                    <div className="category-info">
-                        {item.DivisionName && <span>{item.DivisionName}</span>}
-                        {item.DepartmentName && <span> › {item.DepartmentName}</span>}
-                        {item.ClassName && <span> › {item.ClassName}</span>}
-                    </div>
-                </div>
-            ))}
-        </div>
-    </>
+                        <Box display="flex" flexWrap="wrap" gap={1} mb={3}>
+                            <Chip
+                                label={`Clothing ID: ${item.clothingid}`}
+                                variant="outlined"
+                                sx={{ borderRadius: "8px" }}
+                            />
+
+                            {item.age && (
+                                <Chip
+                                    label={`Age: ${item.age}`}
+                                    variant="outlined"
+                                    sx={{ borderRadius: "8px" }}
+                                />
+                            )}
+
+                            {item.recommendedind !== null && (
+                                <Chip
+                                    icon={item.recommendedind ? <CheckCircleIcon /> : <CancelIcon />}
+                                    label={item.recommendedind ? "Recommended" : "Not Recommended"}
+                                    color={item.recommendedind ? "success" : "error"}
+                                    sx={{ borderRadius: "8px" }}
+                                />
+                            )}
+
+                            {item.PositiveFeedbackCount !== null && (
+                                <Chip
+                                    icon={<ThumbUpIcon />}
+                                    label={`${item.PositiveFeedbackCount} helpful`}
+                                    variant="outlined"
+                                    sx={{ borderRadius: "8px" }}
+                                />
+                            )}
+                        </Box>
+
+                        <Box sx={{ color: "text.secondary", fontSize: "0.9rem" }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {item.DivisionName && <span>{item.DivisionName}</span>}
+                                {item.DepartmentName && <span> › {item.DepartmentName}</span>}
+                                {item.ClassName && <span> › {item.ClassName}</span>}
+                            </Typography>
+                        </Box>
+                    </Paper>
+                ))}
+            </Container>
+        </Box>
     );
 };
 
