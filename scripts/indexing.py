@@ -3,7 +3,7 @@ import os
 import csv
 import logging
 from data_processing.preprocessing import process_bengali_document
-from data_processing.embedding import BengaliEmbeddingModel
+from data_processing.embedding_jina_ai import JinaAIEmbeddingModel
 from databases.vector_store import MilvusVectorStore
 
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +18,7 @@ def main():
     logger.info(f"Starting indexing from {data_path}")
     
     # Initialize components
-    embedding_model = BengaliEmbeddingModel()
+    embedding_model = JinaAIEmbeddingModel()
     vector_store = MilvusVectorStore(host=milvus_host, port=milvus_port)
     
     # Load data from CSV

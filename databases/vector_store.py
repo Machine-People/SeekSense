@@ -12,7 +12,7 @@ class MilvusVectorStore:
         self.port = port
         self.collection_name = collection_name
         connections.connect(host=self.host, port=self.port)
-        self._ensure_collection()
+        self._ensure_collection(dim=1024)
         
     def _ensure_collection(self, dim: int = 768):
         """Create collection if it doesn't exist."""
@@ -106,3 +106,171 @@ class MilvusVectorStore:
             })
             
         return hits
+
+    def similarity_search_with_reassembly(self, query_embedding: np.ndarray, limit: int = 3, reassemble: bool = True) -> List[Dict]:
+        """
+        Search for similar documents and reassemble full documents when needed.
+        
+        Args:
+            query_embedding: Embedding vector for the query
+            limit: Maximum number of reassembled documents to return
+            reassemble: Whether to reassemble chunks into complete documents
+            
+        Returns:
+            List of documents with reassembled content when possible
+        """
+        # First get matching chunks (higher initial limit to account for duplicates)
+        initial_limit = limit * 3 if reassemble else limit
+        chunk_hits = self.similarity_search(query_embedding, limit=initial_limit)
+        
+        if not reassemble:
+            return chunk_hits[:limit]
+        
+        # Group by document (assuming id format is {base_id}_chunk_{i})
+        docs_by_id = {}
+        for hit in chunk_hits:
+            # Extract base_id from chunk id
+            if "_chunk_" not in hit["id"]:
+                # Not a chunked document
+                base_id = hit["id"]
+                if base_id not in docs_by_id:
+                    docs_by_id[base_id] = {
+                        "base_id": base_id,
+                        "title": hit["title"],
+                        "chunks": [{"content": hit["content"], "chunk_index": 0, "score": hit["score"]}],
+                        "top_score": hit["score"]
+                    }
+                continue
+                
+            base_id = hit["id"].rsplit("_chunk_", 1)[0]
+            if base_id not in docs_by_id:
+                docs_by_id[base_id] = {
+                    "base_id": base_id,
+                    "title": hit["title"], 
+                    "chunks": [],
+                    "top_score": hit["score"]  # Keep track of best chunk score
+                }
+            docs_by_id[base_id]["chunks"].append({
+                "content": hit["content"],
+                "chunk_index": hit["chunk_index"],
+                "score": hit["score"]
+            })
+            # Update top score if this chunk has a better score
+            if hit["score"] > docs_by_id[base_id]["top_score"]:
+                docs_by_id[base_id]["top_score"] = hit["score"]
+        
+        # Reassemble documents
+        reassembled_docs = []
+        for doc_id, doc in docs_by_id.items():
+            # Sort chunks by index
+            doc["chunks"].sort(key=lambda x: x["chunk_index"])
+            
+            # Check if we have all chunks
+            have_all_chunks = False
+            if len(doc["chunks"]) == 1 and "total_chunks" not in chunk_hits[0]:
+                # Single chunk document
+                have_all_chunks = True
+            else:
+                # Get the total chunks from any chunk in this document
+                total_chunks = None
+                for hit in chunk_hits:
+                    if hit["id"].startswith(doc_id + "_chunk_"):
+                        total_chunks = hit["total_chunks"]
+                        break
+                
+                if total_chunks is not None and len(doc["chunks"]) >= total_chunks:
+                    have_all_chunks = True
+            
+            # If we don't have all chunks, fetch the missing ones
+            if not have_all_chunks:
+                missing_chunks = self._fetch_missing_chunks(doc_id, doc["chunks"], total_chunks)
+                # Integrate missing chunks
+                doc["chunks"].extend(missing_chunks)
+                # Resort chunks after adding missing ones
+                doc["chunks"].sort(key=lambda x: x["chunk_index"])
+            
+            # Reassemble content
+            full_content = " ".join([chunk["content"] for chunk in doc["chunks"]])
+            
+            reassembled_docs.append({
+                "id": doc_id,
+                "title": doc["title"],
+                "content": full_content,
+                "score": doc["top_score"]
+            })
+        
+        # Sort by score and limit results
+        reassembled_docs.sort(key=lambda x: x["score"], reverse=True)
+        return reassembled_docs[:limit]
+
+    def _fetch_missing_chunks(self, base_id: str, existing_chunks: List[Dict], total_chunks: int = None) -> List[Dict]:
+        """
+        Fetch missing chunks for a document.
+        
+        Args:
+            base_id: Base document ID
+            existing_chunks: Chunks we already have
+            total_chunks: Total number of chunks in the document
+            
+        Returns:
+            List of missing chunks
+        """
+        # If we don't know the total number of chunks, try to find out
+        if total_chunks is None:
+            # Try to get it from an existing chunk
+            for chunk in existing_chunks:
+                if hasattr(chunk, 'total_chunks'):
+                    total_chunks = chunk.total_chunks
+                    break
+                    
+            if total_chunks is None:
+                # Query for any chunk to get total_chunks
+                results = self.collection.query(
+                    expr=f'id like "{base_id}_chunk_%" limit 1',
+                    output_fields=["total_chunks"]
+                )
+                if results and "total_chunks" in results[0]:
+                    total_chunks = results[0]["total_chunks"]
+                else:
+                    # Can't determine total chunks, return what we have
+                    return []
+        
+        # Determine which chunks we're missing
+        existing_indices = {chunk["chunk_index"] for chunk in existing_chunks}
+        missing_indices = [i for i in range(total_chunks) if i not in existing_indices]
+        
+        if not missing_indices:
+            return []
+        
+        # Construct query to get all missing chunks in one operation
+        chunk_ids = [f'"{base_id}_chunk_{idx}"' for idx in missing_indices]
+        id_list = ", ".join(chunk_ids)
+        expr = f'id in [{id_list}]'
+        
+        try:
+            results = self.collection.query(
+                expr=expr,
+                output_fields=["id", "content", "chunk_index"]
+            )
+        except Exception as e:
+            # If the query is too long or has other issues, fall back to individual queries
+            results = []
+            for idx in missing_indices:
+                try:
+                    chunk_results = self.collection.query(
+                        expr=f'id == "{base_id}_chunk_{idx}"',
+                        output_fields=["id", "content", "chunk_index"]
+                    )
+                    results.extend(chunk_results)
+                except Exception:
+                    pass
+        
+        missing_chunks = []
+        for result in results:
+            missing_chunks.append({
+                "content": result["content"],
+                "chunk_index": result["chunk_index"],
+                "score": 0  # These weren't in the initial results
+            })
+        
+        return missing_chunks

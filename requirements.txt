@@ -6,3 +6,4 @@ numpy
 pymilvus
 pydantic
 sentence-transformers
+pymongo
