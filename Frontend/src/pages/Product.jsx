@@ -179,7 +179,7 @@ const ProductPage = () => {
                             {item.PositiveFeedbackCount !== null && (
                                 <Chip
                                     icon={<ThumbUpIcon />}
-                                    label={`${item.PositiveFeedbackCount} helpful`}
+                                    label={`${item.positivefeedbackcount} helpful`}
                                     variant="outlined"
                                     sx={{ borderRadius: "8px" }}
                                 />
