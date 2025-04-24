@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from typing import Dict, Tuple, List
 
 class BengaliIntentClassifier:
-    def __init__(self, model_name="sagorsarker/bangla-bert-base"):
+    def __init__(self, model_name="csebuetnlp/banglabert_large"):
         """Initialize Bengali intent classifier."""
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)

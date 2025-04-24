@@ -6,7 +6,8 @@ import numpy as np
 from typing import List, Dict, Optional
 
 from data_processing.preprocessing import normalize_bengali_text, process_bengali_document
-from data_processing.embedding import BengaliEmbeddingModel
+# from data_processing.embedding import BengaliEmbeddingModel
+from data_processing.embedding_jina_ai import JinaAIEmbeddingModel
 from databases.vector_store import MilvusVectorStore
 from classification.intent_classification import BengaliIntentClassifier
 from classification.llm import BengaliLLM
@@ -14,7 +15,7 @@ from classification.llm import BengaliLLM
 app = FastAPI()
 
 # Initialize components
-embedding_model = BengaliEmbeddingModel()
+embedding_model = JinaAIEmbeddingModel()
 vector_store = MilvusVectorStore(host="localhost", port="19530")
 intent_classifier = BengaliIntentClassifier()
 llm = BengaliLLM()
@@ -31,11 +32,12 @@ async def process_query(request: QueryRequest):
     """Process a Bengali query using the RAG pipeline."""
     try:
         # Normalize query
-        query = normalize_bengali_text(request.query)
-        
+        # query = normalize_bengali_text(request.query)
+        query = request.query
+        print(f"Query:{query}" )
         # Classify intent
         intent, confidence = intent_classifier.classify_intent(query)
-        
+        print(f"Intent: {intent}, Confidence: {confidence}")
         # Extract entities if needed
         entities = intent_classifier.extract_entities(query)
         
@@ -47,7 +49,7 @@ async def process_query(request: QueryRequest):
             query_embedding,
             limit=request.top_k
         )
-        
+        print(search_results)
         # Generate response using LLM
         response = llm.generate_response(query, search_results)
         
@@ -86,4 +88,4 @@ async def index_documents(request: IndexRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
