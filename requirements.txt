@@ -7,3 +7,5 @@ pymilvus
 pydantic
 sentence-transformers
 pymongo
+boto3
+aioboto3
