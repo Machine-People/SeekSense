@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seeksense-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seeksense
+  template:
+    metadata:
+      labels:
+        app: seeksense
+    spec:
+      containers:
+      - name: api
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+            nvidia.com/gpu: {{ .Values.resources.limits.nvidia.com/gpu }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+        env:
+        - name: MILVUS_HOST
+          value: "milvus-service"
+        - name: MILVUS_PORT
+          value: "19530"
+        - name: S3_BUCKET_NAME
+          value: {{ .Values.storage.s3.bucketName }}
+        - name: AWS_REGION
+          value: {{ .Values.storage.s3.region }}
+        - name: JINA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: jinaAI
+        # Add any other environment variables your application needs
