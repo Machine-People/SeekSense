@@ -1,0 +1,37 @@
+# values.yaml for SeekSense Helm chart
+replicaCount: 1
+
+image:
+  repository: seeksense-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: "3"
+    memory: "6Gi"
+    nvidia.com/gpu: "1" 
+  requests:
+    cpu: "1"
+    memory: "2Gi"
+
+milvus:
+  standalone:
+    resources:
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+      requests:
+        cpu: "0.5"
+        memory: "1Gi"
+
+secrets:
+  apiKeys:
+    jinaAI: "your-jina-ai-key"
+    # Add other keys as needed
+
+storage:
+  s3:
+    bucketName: "your-s3-bucket-name"
+    region: "your-s3-region"
+    # AWS credentials will be injected via environment variables
