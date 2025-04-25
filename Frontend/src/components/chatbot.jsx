@@ -27,17 +27,26 @@ export default function Chat() {
     navigate(`/product/${productId}`);
   };
 
-  const [messages, setMessages] = useState([
-    {
-      text: "Welcome to SeekSense! How can I assist you today?",
-      self: false,
-    },
-  ]);
+  // Initialize messages from localStorage or use default welcome message
+  const [messages, setMessages] = useState(() => {
+    const savedMessages = localStorage.getItem('chatMessages');
+    return savedMessages ? JSON.parse(savedMessages) : [
+      {
+        text: "Welcome to SeekSense! How can I assist you today?",
+        self: false,
+      },
+    ];
+  });
 
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
+  }, [messages]);
 
   // Scroll to the bottom of the chat when new messages are added
   useEffect(() => {
@@ -52,6 +61,17 @@ export default function Chat() {
       inputRef.current.focus();
     }
   }, []);
+
+  // Function to clear chat history
+  const clearChat = () => {
+    setMessages([
+      {
+        text: "Welcome to SeekSense! How can I assist you today?",
+        self: false,
+      },
+    ]);
+    // This will trigger the useEffect to update localStorage
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -146,96 +166,39 @@ export default function Chat() {
         sx={{
           width: "100%",
           maxWidth: "800px",
-          marginBottom: 3,
           display: "flex",
-          flexDirection: "column",
-          gap: 2,
-          p: 2,
+          justifyContent: "flex-end",
+          mb: 1,
         }}
       >
-        <Paper
-          elevation={1}
-          sx={{
-            p: 2,
-            borderRadius: "12px 12px 12px 0",
-            bgcolor: "white",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: 1,
+        <Button 
+          variant="outlined" 
+          size="small" 
+          onClick={clearChat}
+          sx={{ 
+            borderRadius: "20px",
+            textTransform: "none",
           }}
         >
-          <SmartToyIcon
-            fontSize="small"
-            sx={{ mt: 0.5, color: "#4CAF50" }}
-          />
-          <Typography variant="body1">
-            Welcome to SeekSense! How can I assist you today?
-          </Typography>
-        </Paper>
+          Clear Chat
+        </Button>
       </Box>
-
-      <Box
-        component="form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage();
-        }}
-        sx={{
-          width: "100%",
-          maxWidth: "600px",
-          display: "flex",
-          gap: 1,
-        }}
-      >
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          inputRef={inputRef}
-          disabled={isTyping}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "30px",
-              bgcolor: "white",
-            },
-          }}
-        />
-        <IconButton
-          color="primary"
-          onClick={sendMessage}
-          disabled={!input.trim() || isTyping}
-          sx={{
-            bgcolor: "#4CAF50",
-            color: "white",
-            "&:hover": {
-              bgcolor: "#388E3C",
-            },
-            "&.Mui-disabled": {
-              bgcolor: "#e0e0e0",
-              color: "#9e9e9e",
-            },
-          }}
-        >
-          <SendIcon />
-        </IconButton>
-      </Box>
-
+      
       <Box
         ref={messagesRef}
         sx={{
           width: "100%",
           maxWidth: "800px",
-          marginTop: 3,
+          flexGrow: 1,
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
           gap: 2,
           p: 2,
+          mb: 3,
         }}
       >
-        {messages.slice(1).map((msg, index) => (
+        {messages.map((msg, index) => (
           <Box
             key={index}
             sx={{
@@ -345,6 +308,54 @@ export default function Chat() {
             )}
           </Box>
         ))}
+      </Box>
+
+      <Box
+        component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}
+        sx={{
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          gap: 1,
+        }}
+      >
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Type your message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          inputRef={inputRef}
+          disabled={isTyping}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "30px",
+              bgcolor: "white",
+            },
+          }}
+        />
+        <IconButton
+          color="primary"
+          onClick={sendMessage}
+          disabled={!input.trim() || isTyping}
+          sx={{
+            bgcolor: "#4CAF50",
+            color: "white",
+            "&:hover": {
+              bgcolor: "#388E3C",
+            },
+            "&.Mui-disabled": {
+              bgcolor: "#e0e0e0",
+              color: "#9e9e9e",
+            },
+          }}
+        >
+          <SendIcon />
+        </IconButton>
       </Box>
     </Box>
   );
