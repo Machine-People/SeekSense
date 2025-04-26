@@ -29,7 +29,7 @@ We used Jina AI embedding model for generating embeddings for text data. it is a
 We did some experiments to find the best model for generating embeddings for text data. We also did experiment with the gguf models to deploy in house but due to resource limitation we had to use the api from them. Here are the experiment results:
 
 ### Gaurdrails/Handeling Irrelevent Queries
-![Gaurdrails/Handeling Irrelevent Queries](media/gaurdrails.png)
+![Gaurdrails/Handeling Irrelevent Queries](media/handelling_irrevent_queries.png)
 
 ### Embedding Models
 
@@ -153,6 +153,7 @@ SeekSense/
     └── setup-cluster.sh
 ```
 ## Acknowledgments
-BUET CSE NLP Group for research on Bengali language models
+BUET CSE NLP Group for research on Bengali language models(https://huggingface.co/csebuetnlp/banglabert)
 Milvus Vector Database
 Groq for LLM inference
+Jina AI for Embedding(https://huggingface.co/jinaai/jina-embeddings-v3)
