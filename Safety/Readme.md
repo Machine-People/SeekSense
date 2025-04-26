@@ -1,0 +1,1 @@
+Based on multiple model tests, the 'nlptown/bert-base-multilingual-uncased-sentiment' model performs well for simple fine-tuning in both Bangla and English, particularly for guardrail safety. With extensive fine-tuning, it is expected to deliver even more impressive results.
