@@ -1,0 +1,28 @@
+# Dockerfile for SeekSense Indexer
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt \
+    boto3 \
+    aioboto3
+
+# Copy application code
+COPY . .
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV MILVUS_HOST=milvus
+ENV MILVUS_PORT=19530
+
+# Run the indexer service
+CMD ["python", "-m", "scripts.s3_event_indexer"]

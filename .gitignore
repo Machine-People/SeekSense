@@ -1,0 +1,51 @@
+# Python
+*venv
+*__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# Pulumi
+**/bin/
+**/obj/
+**/.pulumi/
+**/node_modules/
+**/*.backup
+**/Pulumi.*.yaml
+
+# Other
+.DS_Store
+.env
+.env.*
+*.log
+*.swp
+.vscode/
+.idea/
+secret.txt

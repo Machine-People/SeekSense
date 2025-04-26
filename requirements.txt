@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+transformers
+torch
+numpy
+pymilvus
+pydantic
+sentence-transformers
+pymongo
+boto3
+aioboto3
+pulumi
+pulumi_aws
