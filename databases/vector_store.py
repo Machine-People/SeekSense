@@ -20,7 +20,6 @@ class MilvusVectorStore:
             self.collection = Collection(self.collection_name)
         else:
             # Define fields for the collection
-            id,title_left,category_left,description_left,title_right,category_right,description_right
             fields = [
                 FieldSchema(name="id", dtype=DataType.VARCHAR, max_length=100, is_primary=True),
                 FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=65535),
