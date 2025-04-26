@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seeksense-api
+  namespace: seeksense
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: seeksense-api
+  template:
+    metadata:
+      labels:
+        app: seeksense-api
+    spec:
+      containers:
+      - name: api
+        image: python:3.9-slim
+        command:
+        - "/bin/bash"
+        - "-c"
+        - |
+          apt-get update && apt-get install -y git
+          git clone https://github.com/ai-naymul/SeekSense.git
+          cd SeekSense
+          pip install -r requirements.txt
+          uvicorn app:app --host 0.0.0.0 --port 8000
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "1Gi"
+          requests:
+            cpu: "0.2"
+            memory: "512Mi"
+        env:
+        - name: MILVUS_HOST
+          value: "milvus-service"
+        - name: MILVUS_PORT
+          value: "19530"
+        - name: INTENT_CLASSIFIER_URL
+          value: "http://intent-classifier-service:8001"
+        - name: S3_BUCKET_NAME
+          value: "seeksense-data"
+        - name: AWS_REGION
+          value: "ap-southeast-1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seeksense-api-service
+  namespace: seeksense
+spec:
+  selector:
+    app: seeksense-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
