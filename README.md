@@ -35,6 +35,10 @@ We did some experiments to find the best model for generating embeddings for tex
 
 ![Embedding Models](https://drive.google.com/file/d/19ssG2Fmsi6D28QdUhlLQ_IHD268T8_Lw/view)
 
+### LLM Models
+
+we did experiments with open source gguf models out there those gguf models perfomence is not good also a 3b gguf model takes 4gbs of ram and more than 100% of the cpu usages and due to resource constraint we are not being able to deploy them in house. So we considered using groqs llama 3 8b model which use LPU for inference where we can get faster response then any other model with being cost effective
+
 
 ## Cost Analysis
 
@@ -57,7 +61,7 @@ Here’s a breakdown of the projected API costs for processing 100 000 products,
   \]  
 
 ### 3. LLM Costs (gorq Llama 3 8B 8K)  
-You’ll incur both input-token and output-token charges. We’ll assume you consume the same 15 M tokens for each direction (input & output) when generating your README markdown.
+We’ll assume to consume the same 15 M tokens for each direction (input & output) when generating response
 
 | Direction | Total Tokens | Rate                              | Cost                        |
 |-----------|--------------|-----------------------------------|-----------------------------|
