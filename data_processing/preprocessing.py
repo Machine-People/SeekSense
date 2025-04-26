@@ -96,3 +96,31 @@ def process_bengali_document(doc: Dict[Any, Any], content_field: str = "descript
         }
         processed_chunks.append(chunk_doc)
     return processed_chunks
+
+def process_product_comparison(doc: Dict[Any, Any], content_field: str = "description", doc_uid: str = None) -> List[Dict]:
+    """Process a product comparison document into chunks for indexing."""
+    # Process the product data with the same chunking approach we use for Bengali documents
+    content = doc.get(content_field, "")
+    chunks = recursive_character_text_splitter(content)
+    
+    # Create chunk documents with metadata
+    processed_chunks = []
+    # Generate a unique base id for the document if not provided
+    base_id = doc_uid if doc_uid is not None else str(uuid.uuid4())
+    
+    for i, chunk in enumerate(chunks):
+        chunk_doc = {
+            "id": f"{base_id}_chunk_{i}",
+            "title": doc.get("title", ""),
+            "category_left": doc.get("category_left", ""),
+            "description_left": doc.get("description_left", ""),
+            "title_right": doc.get("title_right", ""),
+            "category_right": doc.get("category_right", ""),
+            "description_right": doc.get("description_right", ""),
+            "chunk_index": i,
+            "total_chunks": len(chunks)
+        }
+        processed_chunks.append(chunk_doc)
+    
+    return processed_chunks
+

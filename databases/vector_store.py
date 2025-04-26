@@ -20,10 +20,15 @@ class MilvusVectorStore:
             self.collection = Collection(self.collection_name)
         else:
             # Define fields for the collection
+            id,title_left,category_left,description_left,title_right,category_right,description_right
             fields = [
                 FieldSchema(name="id", dtype=DataType.VARCHAR, max_length=100, is_primary=True),
                 FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=65535),
-                FieldSchema(name="content", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="category_left", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="description_left", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="title_right", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="category_right", dtype=DataType.VARCHAR, max_length=65535),
+                FieldSchema(name="description_right", dtype=DataType.VARCHAR, max_length=65535),
                 FieldSchema(name="chunk_index", dtype=DataType.INT64),
                 FieldSchema(name="total_chunks", dtype=DataType.INT64),
                 FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=dim)
@@ -50,30 +55,41 @@ class MilvusVectorStore:
         # Prepare data for insertion
         ids = []
         titles = []
-        contents = []
+        category_lefts = []
+        description_lefts = []
+        title_rights = []
+        category_rights = []
+        description_rights = []
         chunk_indices = []
         total_chunks_list = []
         embedding_vectors = []
         
-        MAX_TITLE_LENGTH = 1000
-        MAX_CONTENT_LENGTH = 10000
+        MAX_TEXT_LENGTH = 100000
 
         for doc in documents:
             doc_id = doc["id"]
             if doc_id in embeddings:
                 ids.append(doc_id)
-                # Truncate title and content to allowed lengths
-                titles.append(doc["title"][:MAX_TITLE_LENGTH])
-                contents.append(doc["content"][:MAX_CONTENT_LENGTH])
-                chunk_indices.append(doc["chunk_index"])
-                total_chunks_list.append(doc["total_chunks"])
+                # Truncate fields to allowed lengths
+                titles.append(doc.get("title", "")[:MAX_TEXT_LENGTH])
+                category_lefts.append(doc.get("category_left", "")[:MAX_TEXT_LENGTH])
+                description_lefts.append(doc.get("description_left", "")[:MAX_TEXT_LENGTH])
+                title_rights.append(doc.get("title_right", "")[:MAX_TEXT_LENGTH])
+                category_rights.append(doc.get("category_right", "")[:MAX_TEXT_LENGTH])
+                description_rights.append(doc.get("description_right", "")[:MAX_TEXT_LENGTH])
+                chunk_indices.append(doc.get("chunk_index", 0))
+                total_chunks_list.append(doc.get("total_chunks", 1))
                 embedding_vectors.append(embeddings[doc_id].tolist())
         
         # Insert data
         entities = [
             ids, 
             titles, 
-            contents, 
+            category_lefts,
+            description_lefts,
+            title_rights,
+            category_rights,
+            description_rights,
             chunk_indices, 
             total_chunks_list, 
             embedding_vectors
@@ -91,7 +107,7 @@ class MilvusVectorStore:
             anns_field="embedding",
             param=search_params,
             limit=limit,
-            output_fields=["id", "title", "content", "chunk_index", "total_chunks"]
+            output_fields=["id", "title", "category_left", "description_left", "title_right", "category_right", "description_right", "chunk_index", "total_chunks"]
         )
         
         hits = []
@@ -99,7 +115,11 @@ class MilvusVectorStore:
             hits.append({
                 "id": hit.id,
                 "title": hit.entity.get("title"),
-                "content": hit.entity.get("content"),
+                "category_left": hit.entity.get("category_left"),
+                "description_left": hit.entity.get("description_left"),
+                "title_right": hit.entity.get("title_right"),
+                "category_right": hit.entity.get("category_right"),
+                "description_right": hit.entity.get("description_right"),
                 "chunk_index": hit.entity.get("chunk_index"),
                 "total_chunks": hit.entity.get("total_chunks"),
                 "score": hit.score
@@ -137,7 +157,12 @@ class MilvusVectorStore:
                     docs_by_id[base_id] = {
                         "base_id": base_id,
                         "title": hit["title"],
-                        "chunks": [{"content": hit["content"], "chunk_index": 0, "score": hit["score"]}],
+                        "category_left": hit["category_left"],
+                        "description_left": hit["description_left"],
+                        "title_right": hit["title_right"],
+                        "category_right": hit["category_right"],
+                        "description_right": hit["description_right"],
+                        "chunks": [{"content": "", "chunk_index": 0, "score": hit["score"]}],
                         "top_score": hit["score"]
                     }
                 continue
@@ -147,11 +172,16 @@ class MilvusVectorStore:
                 docs_by_id[base_id] = {
                     "base_id": base_id,
                     "title": hit["title"], 
+                    "category_left": hit["category_left"],
+                    "description_left": hit["description_left"],
+                    "title_right": hit["title_right"],
+                    "category_right": hit["category_right"],
+                    "description_right": hit["description_right"],
                     "chunks": [],
                     "top_score": hit["score"]  # Keep track of best chunk score
                 }
             docs_by_id[base_id]["chunks"].append({
-                "content": hit["content"],
+                "content": "",
                 "chunk_index": hit["chunk_index"],
                 "score": hit["score"]
             })
@@ -190,11 +220,16 @@ class MilvusVectorStore:
                 doc["chunks"].sort(key=lambda x: x["chunk_index"])
             
             # Reassemble content
-            full_content = " ".join([chunk["content"] for chunk in doc["chunks"]])
+            full_content = ""
             
             reassembled_docs.append({
                 "id": doc_id,
                 "title": doc["title"],
+                "category_left": doc["category_left"],
+                "description_left": doc["description_left"],
+                "title_right": doc["title_right"],
+                "category_right": doc["category_right"],
+                "description_right": doc["description_right"],
                 "content": full_content,
                 "score": doc["top_score"]
             })
@@ -250,7 +285,7 @@ class MilvusVectorStore:
         try:
             results = self.collection.query(
                 expr=expr,
-                output_fields=["id", "content", "chunk_index"]
+                output_fields=["id", "chunk_index"]
             )
         except Exception as e:
             # If the query is too long or has other issues, fall back to individual queries
@@ -259,7 +294,7 @@ class MilvusVectorStore:
                 try:
                     chunk_results = self.collection.query(
                         expr=f'id == "{base_id}_chunk_{idx}"',
-                        output_fields=["id", "content", "chunk_index"]
+                        output_fields=["id", "chunk_index"]
                     )
                     results.extend(chunk_results)
                 except Exception:
@@ -268,7 +303,7 @@ class MilvusVectorStore:
         missing_chunks = []
         for result in results:
             missing_chunks.append({
-                "content": result["content"],
+                "content": "",
                 "chunk_index": result["chunk_index"],
                 "score": 0  # These weren't in the initial results
             })

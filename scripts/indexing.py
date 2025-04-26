@@ -46,9 +46,13 @@ def main():
         documents = []
         for doc in batch:
             documents.append({
-                "id": doc.get("product_id", str(doc["_id"])),  # Use product_id or _id as fallback
-                "title": doc.get("title", ""),
-                "description": doc.get("description", ""),
+                "id": doc.get("id", str(doc["_id"])),  # Use product_id or _id as fallback
+                "title_left": doc.get("title_left", ""),
+                "category_left": doc.get("category_left", ""),
+                'description_left': doc.get('description_left', ""),
+                "title_right": doc.get("title_right", ""),
+                "category_right": doc.get("category_right", ""),
+                'description_right': doc.get('description_right', ""),
                 # Include additional fields that might be useful
                 "metadata": {
                     "price": doc.get("price", ""),
