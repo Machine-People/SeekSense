@@ -33,7 +33,7 @@ We did some experiments to find the best model for generating embeddings for tex
 
 ### Embedding Models
 
-![Embedding Models](https://drive.google.com/file/d/19ssG2Fmsi6D28QdUhlLQ_IHD268T8_Lw/view)
+![Embedding Models](media/embedding_model_experiment.png)
 
 ### LLM Models
 
