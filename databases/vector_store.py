@@ -238,73 +238,33 @@ class MilvusVectorStore:
         return reassembled_docs[:limit]
 
     def _fetch_missing_chunks(self, base_id: str, existing_chunks: List[Dict], total_chunks: int = None) -> List[Dict]:
-        """
-        Fetch missing chunks for a document.
+        # Track which chunks we already have
+        existing_indices = set(chunk.get("chunk_index", -1) for chunk in existing_chunks)
         
-        Args:
-            base_id: Base document ID
-            existing_chunks: Chunks we already have
-            total_chunks: Total number of chunks in the document
-            
-        Returns:
-            List of missing chunks
-        """
-        # If we don't know the total number of chunks, try to find out
+        # Return early if we don't know total chunks
         if total_chunks is None:
-            # Try to get it from an existing chunk
-            for chunk in existing_chunks:
-                if hasattr(chunk, 'total_chunks'):
-                    total_chunks = chunk.total_chunks
-                    break
-                    
-            if total_chunks is None:
-                # Query for any chunk to get total_chunks
-                results = self.collection.query(
-                    expr=f'id like "{base_id}_chunk_%" limit 1',
-                    output_fields=["total_chunks"]
-                )
-                if results and "total_chunks" in results[0]:
-                    total_chunks = results[0]["total_chunks"]
-                else:
-                    # Can't determine total chunks, return what we have
-                    return []
-        
-        # Determine which chunks we're missing
-        existing_indices = {chunk["chunk_index"] for chunk in existing_chunks}
-        missing_indices = [i for i in range(total_chunks) if i not in existing_indices]
-        
-        if not missing_indices:
             return []
-        
-        # Construct query to get all missing chunks in one operation
-        chunk_ids = [f'"{base_id}_chunk_{idx}"' for idx in missing_indices]
-        id_list = ", ".join(chunk_ids)
-        expr = f'id in [{id_list}]'
-        
-        try:
-            results = self.collection.query(
-                expr=expr,
-                output_fields=["id", "chunk_index"]
-            )
-        except Exception as e:
-            # If the query is too long or has other issues, fall back to individual queries
-            results = []
-            for idx in missing_indices:
-                try:
-                    chunk_results = self.collection.query(
-                        expr=f'id == "{base_id}_chunk_{idx}"',
-                        output_fields=["id", "chunk_index"]
-                    )
-                    results.extend(chunk_results)
-                except Exception:
-                    pass
-        
+            
+        # Generate a list of chunk IDs to look for
         missing_chunks = []
-        for result in results:
-            missing_chunks.append({
-                "content": "",
-                "chunk_index": result["chunk_index"],
-                "score": 0  # These weren't in the initial results
-            })
         
+        # Look for specific missing indices
+        missing_indices = [i for i in range(total_chunks) if i not in existing_indices]
+        for idx in missing_indices:
+            chunk_id = f"{base_id}_chunk_{idx}"
+            expr = f'id == "{chunk_id}"'
+            
+            try:
+                results = self.collection.query(
+                    expr=expr,
+                    output_fields=["id", "title_left", "category_left", "description_left", 
+                                "title_right", "category_right", "description_right", 
+                                "chunk_index", "total_chunks"]
+                )
+                
+                if results:
+                    missing_chunks.extend(results)
+            except Exception as e:
+                print(f"Error fetching chunk {chunk_id}: {e}")
+                
         return missing_chunks

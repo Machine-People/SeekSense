@@ -16,7 +16,7 @@ class JinaAIEmbeddingModel:
             model_name: The model to use for embeddings. Default is jina-embeddings-v3.
         """
         # self.api_key = api_key or os.environ.get("JINA_API_KEY")
-        self.api_key = "jina_ba19a00bbb9c4f66a17664003f924823W8-BruS_gdc7j827zkuCU3K5eZOh"
+        self.api_key = "jina_5ce13dfc61794c60a38dbdc68b05f3c9Hh_1aVZrLFZm9yQUCBUUjCzol5_F"
         if not self.api_key:
             raise ValueError("API key required. Provide directly or set JINA_API_KEY environment variable.")
         

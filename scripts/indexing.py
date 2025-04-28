@@ -13,7 +13,7 @@ def main():
     # Get environment variables
     milvus_host = os.environ.get("MILVUS_HOST", "localhost")
     milvus_port = os.environ.get("MILVUS_PORT", "19530")
-    data_path = os.environ.get("DATA_PATH", "data_source/preprocess_dataset.csv")
+    data_path = os.environ.get("DATA_PATH", "data_source/dataset_1k_rows_last.csv")
     
     logger.info(f"Starting indexing from {data_path}")
     
